@@ -40,6 +40,7 @@ class MovieCardContainer extends Component {
   render() {
     const { title, posterUrl, pageUrl } = this.props;
     return (
+      //TODO add plot from omdb for hovering
       <MovieCard
         title={title}
         posterUrl={posterUrl}

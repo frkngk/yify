@@ -65,7 +65,7 @@ class BrowseContainer extends Component {
             movies: res.data.data.movies.map(movie => ({
               title: movie.title_long,
               pageUrl: movie.url,
-              posterUrl: movie.small_cover_image,
+              posterUrl: movie.medium_cover_image,
               imdb_code: movie.imdb_code
             })),
             error: null
