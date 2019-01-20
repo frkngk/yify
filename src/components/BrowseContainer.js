@@ -32,7 +32,10 @@ class BrowseContainer extends Component {
   }
 
   updateMovies() {
-    function getSortKeyword(ordering) {
+    
+    //////////// utils start
+
+    const getYifyOrdering = ordering => {
       const dict = {
         downloads: "download_count",
         likes: "like_count",
@@ -42,32 +45,60 @@ class BrowseContainer extends Component {
       if (dict.hasOwnProperty(ordering)) return dict[ordering];
       return ordering;
     }
-    const classifier = this.state.classifier;
-    let params = {};
-    if (classifier.is3D) 
-      params.quality = "3D";
-    if (classifier.genre !== "all") 
-      params.genre = classifier.genre;
-    if (classifier.rating_low !== 0) 
-      params.minimum_rating = classifier.rating_low;
-    if (classifier.ordering !== "latest")
-      params.sort_by = getSortKeyword(classifier.ordering);
-    
-    if (this.state.search !== "")
-      params.query_term = this.state.search;
 
-    const url = [yifyUrl, yify_list_movies, "?", encodeUrlParams(params)].join("");
+    const createYifyUrl = () => {
+      const classifier = this.state.classifier;
+      let params = {};
+      if (classifier.is3D) 
+        params.quality = "3D";
+      if (classifier.genre !== "all") 
+        params.genre = classifier.genre;
+      if (classifier.rating_low !== 0) 
+        params.minimum_rating = classifier.rating_low;
+      if (classifier.ordering !== "latest")
+        params.sort_by = getYifyOrdering(classifier.ordering);
+      
+      if (this.state.search !== "")
+        params.query_term = this.state.search;
+      
+      const url = [yifyUrl, yify_list_movies, "?", encodeUrlParams(params)].join("");
+      return url;
+    }
+
+    const yifyMapper = m => ({
+      imdb_code: m.imdb_code,
+      title: m.title,
+      year: m.year,
+      duration: m.runtime,
+      genres: m.genres,
+      texts: { yify: m.description_full }, // choice
+      language: m.language,
+      imgs: {
+        small: m.small_cover_image,
+        medium: m.medium_cover_image,
+        large: m.large_cover_image,
+        background: m.background_image // choice
+      },
+      torrents: m.torrents.map(yTorr => ({
+        url: yTorr.url,
+        quality: yTorr.quality,   // ["720p", "1080p", "3D"]
+        source_type: yTorr.type,         // ["bluray", "web", ... ]
+        seeds: yTorr.seeds,
+        peers: yTorr.peers,
+        size: yTorr.size,         // "1.55 GB"
+      })).filter(myTorr => ((myTorr.quality === "3D") === this.state.classifier.is3D) )
+    });
+
+    ///////////// utils end
+    ///////////// work start
+
+    const url = createYifyUrl();
 
     axios(url)
       .then(res => {
         if (res.data.data.movie_count !== 0)
           this.setState({
-            movies: res.data.data.movies.map(movie => ({
-              title: movie.title_long,
-              pageUrl: movie.url,
-              posterUrl: movie.medium_cover_image,
-              imdb_code: movie.imdb_code
-            })),
+            movies: res.data.data.movies.map(yifyMapper),
             error: null
           });
         else
@@ -101,13 +132,14 @@ class BrowseContainer extends Component {
   }
 
   render() {
+    const { classifier, movies, search, error } = this.state;
     return (
       <Browse
-        classifierValues={this.state.classifier}
+        classifierValues={classifier}
         onClassifierChange={this.handleClassifierChange}
-        movies={this.state.movies}
-        error={this.state.error}
-        searchValue={this.state.search}
+        movies={movies}
+        error={error}
+        searchValue={search}
         onSearchChange={this.handleSearchChange}
         onSubmit={this.handleSubmit}
       />

@@ -1,66 +1,118 @@
 import React from "react";
-import PropTypes from "prop-types";
-/*
-const eski = (
-  <div className="movieCard">
-    <a href={pageUrl}>
-      <img src={posterUrl} alt={"Poster"} />
-    </a>
-    <a className="title" href={pageUrl}>
-      {title}
-    </a>
-    <ul className="ratings">
-      {ratings.map(rating => {
-        const { source, value } = rating;
-        return (
-          <li className={rating} key={source}>
-            <span className="ratingSource">{source}: </span>
-            <span className="ratingValue">{value}</span>
-          </li>
-        );
-      })}
-    </ul>
-  </div>
-);
-*/
-const MovieCard = props => {
-  const { title, posterUrl, ratings, pageUrl } = props;
+import { shape, number, string, bool, func, arrayOf, oneOf } from 'prop-types';
+import classNames from "classnames";
+
+
+const Torrents = ({ torrents }) => {
+  const isNotMultiple = quality => torrents.filter(torrent => torrent.quality === quality).length <= 1;
+  const isSingleSource = ["720p", "1080p", "3D"].every(isNotMultiple);
+
   return (
-    <div className="movieCard">
-      <ul className="ratings">
-        <li className="goruntu">
-          <a href={pageUrl}>
-            <img src={posterUrl} alt={"Poster"} />
-          </a>
-          <p />
-        </li>
-        <li className="title">
-          <a href={pageUrl}>{title}</a>
-        </li>
-        {ratings.map(rating => {
-          const { source, value } = rating;
-          return (
-            <li className={rating} key={source}>
-              <span className="ratingSource">{source}: </span>
-              <span className="ratingValue">{value}</span>
+    <ul>
+      {torrents.map(torrent => {
+        const { url, quality, source_type, seeds, peers, size } = torrent;
+        return (
+        <li><a href={url} className="movieCard--torrents--button">
+          { !isSingleSource && 
+            <span className="movieCard--torrents--button--sourceType">{source_type} </span>
+          }
+          <span className="movieCard--torrents--button--quality">{quality} </span>
+          <span className="movieCard--torrents--button--seeds">{seeds}</span>
+          <span>/</span>
+          <span className="movieCard--torrents--button--peers">{peers} </span>
+          <span className="movieCard--torrents--button--size">{size}</span>
+        </a></li>);}
+      )}
+    </ul>
+  );
+}
+
+
+
+const MovieCard = ({ movie, err, onClick, isActive }) => {
+  const divClick = (e) => {
+    e.preventDefault();
+    onClick();
+  };
+  if (!!err) return <h2>{err}</h2>;
+
+  const { title, year, imgs, genres, ratings, texts, awards, imdb_code, duration, torrents } = movie;
+  return (
+    <div>
+      <div className="movieCard--visible" onClick={divClick}>
+        <img src={imgs.medium} alt="Movie Poster"/>
+        <div className="movieCard--visible--mainInfo">
+          <h2>{title}</h2>
+          <h3>{year}</h3>
+          <h4>{genres.join(", ")}</h4>
+        </div>
+        <ul className="movieCard--visible--ratings">
+          {ratings && ratings.map(rating => 
+            <li>
+              <span className="movieCard--visible--ratings--source">{rating.source}: </span>
+              <span className="movieCard--visible--ratings--value">{rating.value}</span>
             </li>
-          );
-        })}
-      </ul>
+          )}
+        </ul>
+      </div>
+      <div className={classNames("movieCard--volatile", {"movieCard--isActive": isActive})}>
+        <div className="movieCard--infos">
+          <div className="movieCard--infos--texty">
+            <p className="movieCard--infos--texty--description">{texts.omdb}</p>
+            <p className="movieCard--infos--texty--awards">{awards}</p>
+          </div>
+          <div className="movieCard--infos--rest">
+            <a href={"https://www.imdb.com/title/"+imdb_code}
+              className="movieCard--infos--rest--imdbButton"
+            >IMDb</a>
+            <p>Duration: <span className="movieCard--infos--rest--durationValue">
+              {duration}</span></p>
+          </div>
+        </div>
+        <div className="movieCard--torrents">
+          <Torrents torrents={torrents} />
+        </div>
+      </div>
     </div>
   );
 };
 
 MovieCard.propTypes = {
-  title: PropTypes.string.isRequired,
-  posterUrl: PropTypes.string.isRequired,
-  pageUrl: PropTypes.string.isRequired,
-  ratings: PropTypes.arrayOf(
-    PropTypes.shape({
-      source: PropTypes.string,
-      value: PropTypes.string
-    })
-  )
-};
+  movie: shape({
+    imdb_code: string.isRequired,
+    title: string.isRequired,
+    year: number.isRequired,
+    duration: number,
+    awards: string,
+    genres: arrayOf(string),
+    texts: shape({
+      yify: string,
+      omdb: string,
+    }),
+    language: string,
+    imgs: shape({
+      small: string,
+      medium: string,
+      large: string,
+      background: string, // choose between original and processed
+      omdb: string,
+    }),
+    ratings: arrayOf(shape({
+      source: oneOf(["Internet Movie Database", "Rotten Tomatoes", "Metacritic"]),
+      value: string,
+    })),
+    torrents: arrayOf(shape({
+      url: string,
+      quality: oneOf(["720p", "1080p", "3D"]),
+      source_type: oneOf(["bluray", "web"]),
+      seeds: number,
+      peers: number,
+      size: string,      // "1.55 GB"
+    }))
+  }),
+  err: string,
+  onClick: func.isRequired,
+  isActive: bool.isRequired,
+}
 
 export default MovieCard;

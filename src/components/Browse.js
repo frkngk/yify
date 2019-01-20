@@ -13,7 +13,9 @@ const Browse = (props) =>
       onSearchChange={props.onSearchChange}
       onSubmit={props.onSubmit}
     />
-    <MoviesTable movies={props.movies} />
+    <MoviesTable 
+      movies={props.movies}
+      is3D={props.classifierValues.is3D} />
     { props.error && <h2>{props.error}</h2> }
   </div>;
 
