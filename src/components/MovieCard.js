@@ -12,7 +12,7 @@ const Torrents = ({ torrents }) => {
       {torrents.map(torrent => {
         const { url, quality, source_type, seeds, peers, size } = torrent;
         return (
-        <li><a href={url} className="movieCard--torrents--button">
+        <li key={url}><a href={url} className="movieCard--torrents--button">
           { !isSingleSource && 
             <span className="movieCard--torrents--button--sourceType">{source_type} </span>
           }
@@ -48,7 +48,7 @@ const MovieCard = ({ movie, err, onClick, isActive }) => {
         </div>
         <ul className="movieCard--visible--ratings">
           {ratings && ratings.map(rating => 
-            <li>
+            <li key={rating.source}>
               <span className="movieCard--visible--ratings--source">{rating.source}: </span>
               <span className="movieCard--visible--ratings--value">{rating.value}</span>
             </li>

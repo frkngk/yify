@@ -47,8 +47,6 @@ class MovieCardContainer extends Component {
     axios(url).then(res => {
       const oMovie = this.omdbMapper(res.data);
       const merged = objectAssignDeep( {}, this.state.movie, oMovie );
-      console.log(merged);
-      if (!merged.ratings) console.log(oMovie);
       this.setState({ movie: merged });
     }).catch(err => this.setState({ err }));
   }

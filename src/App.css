@@ -70,9 +70,12 @@ body {
   list-style: none;
 }
 /*//////////////////////////////////////////////////// BAK BURADA */
-.isActive {
+.movieCard--volatile {
+  visibility: hidden;
+}
+.movieCard--isActive {
+  visibility: visible;
   background-color: rgba(0,0,0,0.5);
-  height: 600px;
 }
 
 li {
